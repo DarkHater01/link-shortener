@@ -1,0 +1,47 @@
+# GitHub como backend: acortador de URLs sin servidor.
+# Los issues con etiqueta `link` son la base de datos; este Action compila el
+# sitio estatico y lo publica en Pages. Coste 0, sin base de datos, sin hosting.
+name: Build shortener
+
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled, closed, reopened]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Leer los enlaces desde los issues (la "base de datos")
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue list --label link --state open --limit 1000 \
+            --json title,body > links.json
+
+      - name: Compilar el sitio
+        run: python3 bin/build.py links.json public
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - id: deploy
+        uses: actions/deploy-pages@v4

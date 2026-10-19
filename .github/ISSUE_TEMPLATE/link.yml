@@ -1,0 +1,16 @@
+name: Proponer un enlace
+description: Propon un slug y una URL. Publicar requiere que un maintainer ponga la etiqueta "link".
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        El **titulo** de este issue sera el slug (minusculas, numeros, guiones).
+        Rellena la URL abajo. Un maintainer la publicara poniendo la etiqueta `link`.
+  - type: input
+    id: url
+    attributes:
+      label: URL de destino
+      placeholder: https://ejemplo.com/mi-pagina
+    validations:
+      required: true
